@@ -49,7 +49,7 @@ public final class Paperclip {
     }
 
     private static URL[] setupClasspath() {
-        final var repoDir = Path.of(System.getProperty("bundlerRepoDir", ""));
+        final var repoDir = Path.of("cache");
 
         final PatchEntry[] patches = findPatches();
         final DownloadContext downloadContext = findDownloadContext();
@@ -59,12 +59,17 @@ public final class Paperclip {
 
         final Path baseFile;
         if (downloadContext != null) {
+            String rawFileName = downloadContext.fileName();
+            String version = rawFileName
+                    .replaceFirst("^mojang_", "")
+                    .replaceFirst("\\.jar$", "");
+            Path versionsDir = repoDir.resolve("versions/" + version);
             try {
-                downloadContext.download(repoDir);
+                downloadContext.download(versionsDir);
             } catch (final IOException e) {
                 throw Util.fail("Failed to download original jar", e);
             }
-            baseFile = downloadContext.getOutputFile(repoDir);
+            baseFile = downloadContext.getOutputFile(versionsDir);
         } else {
             baseFile = null;
         }
